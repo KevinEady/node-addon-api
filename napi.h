@@ -1818,6 +1818,130 @@ namespace Napi {
     std::string _error;
   };
 
+  class ThreadSafeFunction {
+  public:
+    enum Status {
+      CLOSE,
+      FULL,
+      ERROR,
+      OK
+    };
+
+    template <typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount);
+
+    template <typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount);
+
+    template <typename DataType, typename Finalizer, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  DataType* data,
+                                  Finalizer finalizeCallback);
+
+    template <typename Context, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Context* context);
+
+    template <typename DataType, typename Finalizer,
+              typename Context, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  DataType* data,
+                                  Finalizer finalizeCallback,
+                                  Context* context);
+
+    template <typename DataType, typename Finalizer, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  DataType* data,
+                                  Finalizer finalizeCallback);
+
+    template <typename Context, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Context* context);
+
+    template <typename DataType, typename Finalizer,
+              typename Context, typename ResourceString>
+    static ThreadSafeFunction New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  DataType* data,
+                                  Finalizer finalizeCallback,
+                                  Context* context);
+
+    ThreadSafeFunction();
+
+    Status BlockingCall() const;
+
+    template <typename Callback>
+    Status BlockingCall(Callback callback) const;
+
+    template <typename DataType, typename Callback>
+    Status BlockingCall(DataType* data, Callback callback) const;
+
+    Status NonBlockingCall() const;
+
+    template <typename Callback>
+    Status NonBlockingCall(Callback callback) const;
+
+    template <typename DataType, typename Callback>
+    Status NonBlockingCall(DataType* data, Callback callback) const;
+
+    bool Acquire() const;
+    bool Release();
+    bool Abort();
+
+    bool IsAborted() const;
+
+  private:
+    using CallbackWrapper = std::function<void(Napi::Env, Napi::Function)>;
+
+    ThreadSafeFunction(napi_env env, napi_threadsafe_function tsFunctionValue);
+
+    Status CallInternal(CallbackWrapper* callbackWrapper,
+                        napi_threadsafe_function_call_mode mode) const;
+
+    static void CallJS(napi_env env,
+                       napi_value jsCallback,
+                       void* context,
+                       void* data);
+
+    napi_env _env;
+    napi_threadsafe_function _tsFunctionValue;
+  };
+
   // Memory management.
   class MemoryManagement {
     public:
