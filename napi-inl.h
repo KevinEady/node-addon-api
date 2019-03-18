@@ -3621,11 +3621,10 @@ inline void AsyncWorker::OnWorkComplete(
 ////////////////////////////////////////////////////////////////////////////////
 // ThreadSafeFunction class
 ////////////////////////////////////////////////////////////////////////////////
-
-// static
-template <typename DataType, typename Finalizer,
-          typename Context, typename ResourceString>
-inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+// with Context and Finalizer + Data
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<Context, DataType> ThreadSafeFunction<Context, DataType>::New(napi_env env,
                                            const Function& callback,
                                            const Object& resource,
                                            ResourceString resourceName,
@@ -3650,58 +3649,144 @@ inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
     NAPI_THROW_IF_FAILED(env, status, ThreadSafeFunction());
   }
 
-  return ThreadSafeFunction(env, tsFunctionValue);
+  return ThreadSafeFunction<Context, DataType>(env, tsFunctionValue);
 }
 
-inline ThreadSafeFunction::Status ThreadSafeFunction::BlockingCall() const {
+// with Context and Finalizer
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<Context, nullptr_t> ThreadSafeFunction<Context, DataType>::New(napi_env env,
+                                           const Function& callback,
+                                           const Object& resource,
+                                           ResourceString resourceName,
+                                           size_t maxQueueSize,
+                                           size_t initialThreadCount,
+                                           Finalizer finalizeCallback,
+                                           Context* context) {
+  return ThreadSafeFunction<Context, nullptr_t >::New(
+      env, callback, resource, resourceName, maxQueueSize, initialThreadCount,
+      nullptr, finalizeCallback, context);
+}
+
+// with Context
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<Context, nullptr_t> ThreadSafeFunction<Context, DataType>::New(napi_env env,
+                                           const Function& callback,
+                                           const Object& resource,
+                                           ResourceString resourceName,
+                                           size_t maxQueueSize,
+                                           size_t initialThreadCount,
+                                           Context* context) {
+  return ThreadSafeFunction<Context, nullptr_t >::New(
+      env, callback, resource, resourceName, maxQueueSize, initialThreadCount,
+      nullptr, []( Napi::Env, nullptr_t*, Context* ) { }, context);
+}
+
+// with nothing
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<nullptr_t, nullptr_t> ThreadSafeFunction<Context, DataType>::New(napi_env env,
+                                           const Function& callback,
+                                           const Object& resource,
+                                           ResourceString resourceName,
+                                           size_t maxQueueSize,
+                                           size_t initialThreadCount) {
+  return ThreadSafeFunction<Context, nullptr_t >::New(
+      env, callback, resource, resourceName, maxQueueSize, initialThreadCount,
+      nullptr, []( Napi::Env, nullptr_t*, nullptr_t* ) { }, nullptr);
+}
+
+// with Finalizer + Data
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<nullptr_t, DataType> ThreadSafeFunction<Context, DataType>::New(napi_env env,
+                                           const Function& callback,
+                                           const Object& resource,
+                                           ResourceString resourceName,
+                                           size_t maxQueueSize,
+                                           size_t initialThreadCount,
+                                           DataType* data,
+                                           Finalizer finalizeCallback) {
+  return ThreadSafeFunction<Context, nullptr_t >::New(
+      env, callback, resource, resourceName, maxQueueSize, initialThreadCount,
+      data, finalizeCallback, nullptr);
+}
+
+// with Finalizer
+template <typename Context, typename DataType>
+template <typename ResourceString>
+inline ThreadSafeFunction<nullptr_t, nullptr_t> ThreadSafeFunction<Context, DataType>::New(napi_env env,
+                                           const Function& callback,
+                                           const Object& resource,
+                                           ResourceString resourceName,
+                                           size_t maxQueueSize,
+                                           size_t initialThreadCount,
+                                           Finalizer finalizeCallback) {
+  return ThreadSafeFunction<Context, nullptr_t >::New(
+      env, callback, resource, resourceName, maxQueueSize, initialThreadCount,
+      nullptr, finalizeCallback, nullptr);
+}
+
+template <typename Context, typename DataType>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::BlockingCall() const {
   return CallInternal(nullptr, napi_tsfn_blocking);
 }
 
-template <typename Callback>
-inline ThreadSafeFunction::Status ThreadSafeFunction::BlockingCall(
+template <typename Context, typename DataType>
+template 
+<typename Callback>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::BlockingCall(
     Callback callback) const {
   return CallInternal(new CallbackWrapper(callback), napi_tsfn_blocking);
 }
 
-template <typename DataType, typename Callback>
-inline ThreadSafeFunction::Status ThreadSafeFunction::BlockingCall(
-    DataType* data, Callback callback) const {
-  auto wrapper = [data, callback](Env env, Function jsCallback) {
-    callback(env, jsCallback, data);
+template <typename Context, typename DataType>
+template <typename CallDataType, typename Callback>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::BlockingCall(
+    CallDataType* data, Callback callback) const {
+  auto wrapper = [data, callback](Env env, Function jsCallback, Context* context) {
+    callback(env, jsCallback, data, context);
   };
   return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_blocking);
 }
 
-inline ThreadSafeFunction::Status ThreadSafeFunction::NonBlockingCall() const {
+template <typename Context, typename DataType>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::NonBlockingCall() const {
   return CallInternal(nullptr, napi_tsfn_nonblocking);
 }
 
+template <typename Context, typename DataType>
 template <typename Callback>
-inline ThreadSafeFunction::Status ThreadSafeFunction::NonBlockingCall(
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::NonBlockingCall(
     Callback callback) const {
   return CallInternal(new CallbackWrapper(callback), napi_tsfn_nonblocking);
 }
 
-template <typename DataType, typename Callback>
-inline ThreadSafeFunction::Status ThreadSafeFunction::NonBlockingCall(
-    DataType* data, Callback callback) const {
-  auto wrapper = [data, callback](Env env, Function jsCallback) {
-    callback(env, jsCallback, data);
+template <typename Context, typename DataType>
+template <typename CallDataType, typename Callback>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::NonBlockingCall(
+    CallDataType* data, Callback callback) const {
+  auto wrapper = [data, callback](Env env, Function jsCallback, Context* context) {
+    callback(env, jsCallback, data, context);
   };
   return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_nonblocking);
 }
 
-inline bool ThreadSafeFunction::Acquire() const {
+template <typename Context, typename DataType>
+inline bool ThreadSafeFunction<Context, DataType>::Acquire() const {
   return !IsAborted() && napi_acquire_threadsafe_function(
       _tsFunctionValue) == napi_ok;
 }
 
-inline bool ThreadSafeFunction::Release() {
+template <typename Context, typename DataType>
+inline bool ThreadSafeFunction<Context, DataType>::Release() {
   return !IsAborted() && napi_release_threadsafe_function(
       _tsFunctionValue, napi_tsfn_release) == napi_ok;
 }
 
-inline bool ThreadSafeFunction::Abort() {
+template <typename Context, typename DataType>
+inline bool ThreadSafeFunction<Context, DataType>::Abort() {
   if (IsAborted()) {
     return false;
   }
@@ -3715,26 +3800,30 @@ inline bool ThreadSafeFunction::Abort() {
   return status == napi_ok;
 }
 
-inline bool ThreadSafeFunction::IsAborted() const {
+template <typename Context, typename DataType>
+inline bool ThreadSafeFunction<Context, DataType>::IsAborted() const {
   return _env == nullptr || _tsFunctionValue == nullptr;
 }
 
-inline ThreadSafeFunction::ThreadSafeFunction()
+template <typename Context, typename DataType>
+inline ThreadSafeFunction<Context, DataType>::ThreadSafeFunction()
   : _env(nullptr),
     _tsFunctionValue(nullptr) {
 }
 
-inline ThreadSafeFunction::ThreadSafeFunction(
+template <typename Context, typename DataType>
+inline ThreadSafeFunction<Context, DataType>::ThreadSafeFunction(
     napi_env env, napi_threadsafe_function tsFunctionValue)
   : _env(env),
     _tsFunctionValue(tsFunctionValue) {
 }
 
-inline ThreadSafeFunction::Status ThreadSafeFunction::CallInternal(
+template <typename Context, typename DataType>
+inline ThreadSafeFunctionStatus ThreadSafeFunction<Context, DataType>::CallInternal(
     CallbackWrapper* callbackWrapper,
     napi_threadsafe_function_call_mode mode) const {
   if (IsAborted()) {
-    return CLOSE;
+    return ThreadSafeFunctionStatus::CLOSE;
   }
   napi_status status = napi_call_threadsafe_function(
       _tsFunctionValue, callbackWrapper, mode);
@@ -3744,27 +3833,46 @@ inline ThreadSafeFunction::Status ThreadSafeFunction::CallInternal(
 
   switch (status) {
   case napi_ok:
-    return OK;
+    return ThreadSafeFunctionStatus::OK;
   case napi_closing:
-    return CLOSE;
+    return ThreadSafeFunctionStatus::CLOSE;
   case napi_queue_full:
-    return FULL;
+    return ThreadSafeFunctionStatus::FULL;
   default:
-    return ERROR;
+    return ThreadSafeFunctionStatus::ERROR;
   }
 }
 
+template <typename Context, typename DataType>
+inline Context* ThreadSafeFunction<Context, DataType>::GetContext() const {
+  if (IsAborted())
+    return nullptr;
+  
+  void* hint;
+
+  napi_status status = napi_get_threadsafe_function_context(_tsFunctionValue, &hint);
+  NAPI_THROW_IF_FAILED(_env, status, nullptr);
+  
+  auto* details = static_cast< Napi::details::FinalizeData<void, Finalizer, Context>* >(hint);
+
+  return static_cast<Context*>(details->hint);
+}
+
 // static
-inline void ThreadSafeFunction::CallJS(napi_env env,
+template <typename Context, typename DataType>
+inline void ThreadSafeFunction<Context, DataType>::CallJS(napi_env env,
                                        napi_value jsCallback,
-                                       void* /* context */,
+                                       void* context,
                                        void* data) {
   if (env == nullptr && jsCallback == nullptr)
     return;
 
   if (data != nullptr) {
     auto* callbackWrapper = static_cast<CallbackWrapper*>(data);
-    (*callbackWrapper)(env, Function(env, jsCallback));
+
+    auto* details = static_cast< Napi::details::FinalizeData<void, Finalizer, Context>* >(context);
+
+    (*callbackWrapper)(env, Function(env, jsCallback), details->hint );
     delete callbackWrapper;
   } else {
     Function(env, jsCallback).Call({});

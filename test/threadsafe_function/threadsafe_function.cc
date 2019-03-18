@@ -7,8 +7,6 @@ constexpr size_t ARRAY_LENGTH = 10;
 constexpr size_t MAX_QUEUE_SIZE = 2;
 
 static uv_thread_t uvThreads[2];
-static ThreadSafeFunction tsfn;
-
 struct ThreadSafeFunctionInfo {
   enum CallType {
     DEFAULT,
@@ -21,11 +19,15 @@ struct ThreadSafeFunctionInfo {
   uint32_t maxQueueSize;
 } tsfnInfo;
 
+using TSFN = ThreadSafeFunction<ThreadSafeFunctionInfo, uv_thread_t>;
+
+static TSFN tsfn;
+
 // Thread data to transmit to JS
 static int ints[ARRAY_LENGTH];
 
 static void SecondaryThread(void* data) {
-  ThreadSafeFunction* tsFunction = static_cast<ThreadSafeFunction*>(data);
+  TSFN* tsFunction = static_cast<TSFN*>(data);
 
   if (!tsFunction->Release()) {
     Error::Fatal("SecondaryThread", "ThreadSafeFunction.Release() failed");
@@ -34,10 +36,10 @@ static void SecondaryThread(void* data) {
 
 // Source thread producing the data
 static void DataSourceThread(void* data) {
-  ThreadSafeFunction* tsFunction = static_cast<ThreadSafeFunction*>(data);
+  TSFN* tsFunction = static_cast<TSFN*>(data);
 
   // FIXME: The `info` should be come from "GetContext()" method
-  ThreadSafeFunctionInfo* info = &tsfnInfo;
+  ThreadSafeFunctionInfo* info = tsFunction->GetContext();
 
   if (info->startSecondary) {
     if (!tsFunction->Acquire()) {
@@ -52,8 +54,8 @@ static void DataSourceThread(void* data) {
   bool queueWasFull = false;
   bool queueWasClosing = false;
   for (int index = ARRAY_LENGTH - 1; index > -1 && !queueWasClosing; index--) {
-    ThreadSafeFunction::Status status = ThreadSafeFunction::ERROR;
-    auto callback = [](Env env, Function jsCallback, int* data) {
+    ThreadSafeFunctionStatus status = ThreadSafeFunctionStatus::ERROR;
+    auto callback = [](Env env, Function jsCallback, int* data, ThreadSafeFunctionInfo* context) {
       jsCallback.Call({ Number::New(env, *data) });
     };
 
@@ -77,15 +79,15 @@ static void DataSourceThread(void* data) {
     }
 
     switch (status) {
-    case ThreadSafeFunction::FULL:
+    case ThreadSafeFunctionStatus::FULL:
       queueWasFull = true;
       index++;
       // fall through
 
-    case ThreadSafeFunction::OK:
+    case ThreadSafeFunctionStatus::OK:
       continue;
 
-    case ThreadSafeFunction::CLOSE:
+    case ThreadSafeFunctionStatus::CLOSE:
       queueWasClosing = true;
       break;
 
@@ -121,14 +123,14 @@ static Value StopThread(const CallbackInfo& info) {
 // Join the thread and inform JS that we're done.
 static void JoinTheThreads(Env /* env */,
                            uv_thread_t* theThreads,
-                           ThreadSafeFunctionInfo* info) {
+                           ThreadSafeFunctionInfo* context) {
   uv_thread_join(&theThreads[0]);
-  if (info->startSecondary) {
+  if (context->startSecondary) {
     uv_thread_join(&theThreads[1]);
   }
 
-  info->jsFinalizeCallback.Call({});
-  info->jsFinalizeCallback.Reset();
+  context->jsFinalizeCallback.Call({});
+  context->jsFinalizeCallback.Reset();
 }
 
 static Value StartThreadInternal(const CallbackInfo& info,
@@ -138,7 +140,7 @@ static Value StartThreadInternal(const CallbackInfo& info,
   tsfnInfo.startSecondary = info[2].As<Boolean>();
   tsfnInfo.maxQueueSize = info[3].As<Number>().Uint32Value();
 
-  tsfn = ThreadSafeFunction::New(info.Env(), info[0].As<Function>(), Object(),
+  tsfn = TSFN::New(info.Env(), info[0].As<Function>(), Object(),
       "Test", tsfnInfo.maxQueueSize, 2, uvThreads, JoinTheThreads, &tsfnInfo);
 
   if (uv_thread_create(&uvThreads[0], DataSourceThread, &tsfn) != 0) {
