@@ -18,12 +18,18 @@ Value RejectPromise(const CallbackInfo& info) {
   return deferred.Promise();
 }
 
+Value BreakPromise(const CallbackInfo& info) {
+  auto deferred = Promise::Deferred::New(info.Env());
+  return deferred.Promise();
+}
+
 Object InitPromise(Env env) {
   Object exports = Object::New(env);
 
   exports["isPromise"] = Function::New(env, IsPromise);
   exports["resolvePromise"] = Function::New(env, ResolvePromise);
   exports["rejectPromise"] = Function::New(env, RejectPromise);
+  exports["brokenPromise"] = Function::New(env, RejectPromise);
 
   return exports;
 }
