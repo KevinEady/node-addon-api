@@ -67,10 +67,14 @@ jobs:
         echo "CFLAGS=\"$CFLAGS\" CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\""
         npm run pretest -- --verbose
         node test/date.js
-        find . -iname '*.gcda'
-        export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
-        find $GEM_HOME/bin
-        $GEM_HOME/bin/coveralls-lcov test/build/$(node -p "process.config.target_defaults.default_configuration")/coverage.info --repo-token $COVERALLS_REPO_TOKEN
       env:
         COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
+    - name: Upload coverage
+      if: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
+      run: |
+        BUILD_TYPE=$(node -p "process.config.target_defaults.default_configuration")
+        GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+        lcov --capture --directory test/build/$BUILD_TYPE/obj.target/ --output-file test/build/$BUILD_TYPE/coverage.info
+        $GEM_HOME/bin/coveralls-lcov test/build/$BUILD_TYPE/coverage.info --repo-token $COVERALLS_REPO_TOKEN
+      env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
