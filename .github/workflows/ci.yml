@@ -29,6 +29,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install g++-4.9
         fi
+        if [ ! -z "$COLLECT_COVERAGE" ]; then
+          sudo gem install --user coveralls-lcov
+        fi
+      env:
+        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix-compiler, matrix-os) == 'node/16-gcc-ubuntu-16.04' }}
     - name: Use Node.js ${{ matrix.node-version }}
       run: |
         git clone --branch v1.4.2 --depth 1 https://github.com/jasongin/nvs ~/.nvs
@@ -50,7 +55,12 @@ jobs:
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           export CC="clang" CXX="clang++"
         fi
-        export CFLAGS="$CFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
-        echo "CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\""
+        if [ ! -z "$COLLECT_COVERAGE" ]; then
+          export CFLAGS="$CFLAGS -O3 --coverage" CXXFLAGS="$CXXFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
+        fi
+        echo "CFLAGS=\"$CFLAGS\" CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\""
         npm run pretest -- --verbose
         node test
+        find . -iname '*.gcda'
+      env:
+        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix-compiler, matrix-os) == 'node/16-gcc-ubuntu-16.04' }}
