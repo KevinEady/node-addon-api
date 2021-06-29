@@ -8,17 +8,17 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - node/10
-          - node/12
-          - node/14
-          - node/15
+          # - node/10
+          # - node/12
+          # - node/14
+          # - node/15
           - node/16
         compiler:
           - gcc
-          - clang
+          # - clang
         os:
           - ubuntu-16.04 # ubuntu-18.04/ubuntu-latest missing package g++-4.9
-          - macos-latest
+          # - macos-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -55,12 +55,14 @@ jobs:
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           export CC="clang" CXX="clang++"
         fi
+        export CFLAGS="$CFLAGS -O3" CXXFLAGS="$CXXFLAGS -O3"
         if [ "$COLLECT_COVERAGE" == "true" ]; then
-          export CFLAGS="$CFLAGS -O3 --coverage" CXXFLAGS="$CXXFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
+          export CFLAGS="$CFLAGS --coverage" CXXFLAGS="$CXXFLAGS --coverage" LDFLAGS="$LDFLAGS --coverage"
         fi
         echo "CFLAGS=\"$CFLAGS\" CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\""
         npm run pretest -- --verbose
         node test/date.js
         find . -iname '*.gcda'
+        coveralls-lcov test/build/$(node -p "process.config.target_defaults.default_configuration")/coverage.info --repo-token ${{ secrets.COVERALLS_REPO_TOKEN }}
       env:
         COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
