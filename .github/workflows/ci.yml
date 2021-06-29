@@ -30,9 +30,9 @@ jobs:
           sudo apt-get install g++-4.9
         fi
         if [ "$COLLECT_COVERAGE" == "true" ]; then
-          export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
-          export PATH="$PATH:$GEM_HOME/bin"
-          sudo gem install --user coveralls-lcov
+          # export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+          # export PATH="$PATH:$GEM_HOME/bin"
+          gem install coveralls-lcov
           echo "PATH=\"$PATH\" GEM_HOME=\"$GEM_HOME\""
           find $GEM_HOME
         fi
