@@ -32,7 +32,7 @@ jobs:
         if [ "$COLLECT_COVERAGE" == "true" ]; then
           # export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
           # export PATH="$PATH:$GEM_HOME/bin"
-          sudo gem install coveralls-lcov
+          gem install --user coveralls-lcov
           # echo "PATH=\"$PATH\" GEM_HOME=\"$GEM_HOME\""
           # find $GEM_HOME
         fi
