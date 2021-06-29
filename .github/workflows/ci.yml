@@ -33,7 +33,7 @@ jobs:
           sudo gem install --user coveralls-lcov
         fi
       env:
-        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix-compiler, matrix-os) == 'node/16-gcc-ubuntu-16.04' }}
+        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
     - name: Use Node.js ${{ matrix.node-version }}
       run: |
         git clone --branch v1.4.2 --depth 1 https://github.com/jasongin/nvs ~/.nvs
@@ -63,4 +63,4 @@ jobs:
         node test
         find . -iname '*.gcda'
       env:
-        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix-compiler, matrix-os) == 'node/16-gcc-ubuntu-16.04' }}
+        COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
