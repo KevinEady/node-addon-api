@@ -73,85 +73,82 @@ Object InitObjectFreezeSeal(Env env);
 #endif
 
 Object Init(Env env, Object exports) {
-// #if (NAPI_VERSION > 5)
-//   exports.Set("addon", InitAddon(env));
-//   exports.Set("addon_data", InitAddonData(env));
-// #endif
-//   exports.Set("arraybuffer", InitArrayBuffer(env));
-//   exports.Set("asynccontext", InitAsyncContext(env));
-// #if (NAPI_VERSION > 3)
-//   exports.Set("asyncprogressqueueworker", InitAsyncProgressQueueWorker(env));
-//   exports.Set("asyncprogressworker", InitAsyncProgressWorker(env));
-// #endif
-//   exports.Set("globalObject", InitGlobalObject(env));
-//   exports.Set("asyncworker", InitAsyncWorker(env));
-//   exports.Set("persistentasyncworker", InitPersistentAsyncWorker(env));
-//   exports.Set("basic_types_array", InitBasicTypesArray(env));
-//   exports.Set("basic_types_boolean", InitBasicTypesBoolean(env));
-//   exports.Set("basic_types_number", InitBasicTypesNumber(env));
-//   exports.Set("basic_types_value", InitBasicTypesValue(env));
-// #if (NAPI_VERSION > 5)
-//   exports.Set("bigint", InitBigInt(env));
-// #endif
+#if (NAPI_VERSION > 5)
+  exports.Set("addon", InitAddon(env));
+  exports.Set("addon_data", InitAddonData(env));
+#endif
+  exports.Set("arraybuffer", InitArrayBuffer(env));
+  exports.Set("asynccontext", InitAsyncContext(env));
+#if (NAPI_VERSION > 3)
+  exports.Set("asyncprogressqueueworker", InitAsyncProgressQueueWorker(env));
+  exports.Set("asyncprogressworker", InitAsyncProgressWorker(env));
+#endif
+  exports.Set("globalObject", InitGlobalObject(env));
+  exports.Set("asyncworker", InitAsyncWorker(env));
+  exports.Set("persistentasyncworker", InitPersistentAsyncWorker(env));
+  exports.Set("basic_types_array", InitBasicTypesArray(env));
+  exports.Set("basic_types_boolean", InitBasicTypesBoolean(env));
+  exports.Set("basic_types_number", InitBasicTypesNumber(env));
+  exports.Set("basic_types_value", InitBasicTypesValue(env));
+#if (NAPI_VERSION > 5)
+  exports.Set("bigint", InitBigInt(env));
+#endif
 #if (NAPI_VERSION > 4)
   exports.Set("date", InitDate(env));
 #endif
-  //   exports.Set("buffer", InitBuffer(env));
-  // #if (NAPI_VERSION > 2)
-  //   exports.Set("callbackscope", InitCallbackScope(env));
-  // #endif
-  //   exports.Set("dataview", InitDataView(env));
-  //   exports.Set("dataview_read_write", InitDataView(env));
-  //   exports.Set("dataview_read_write", InitDataViewReadWrite(env));
-  //   exports.Set("error", InitError(env));
-  //   exports.Set("external", InitExternal(env));
-  //   exports.Set("function", InitFunction(env));
-  //   exports.Set("functionreference", InitFunctionReference(env));
-  //   exports.Set("name", InitName(env));
-  //   exports.Set("handlescope", InitHandleScope(env));
-  //   exports.Set("movable_callbacks", InitMovableCallbacks(env));
-  //   exports.Set("memory_management", InitMemoryManagement(env));
-  //   exports.Set("object", InitObject(env));
-  // #ifndef NODE_ADDON_API_DISABLE_DEPRECATED
-  //   exports.Set("object_deprecated", InitObjectDeprecated(env));
-  // #endif // !NODE_ADDON_API_DISABLE_DEPRECATED
-  //   exports.Set("promise", InitPromise(env));
-  //   exports.Set("run_script", InitRunScript(env));
-  // #if (NAPI_VERSION > 3)
-  //   exports.Set("threadsafe_function_ctx", InitThreadSafeFunctionCtx(env));
-  //   exports.Set("threadsafe_function_existing_tsfn",
-  //   InitThreadSafeFunctionExistingTsfn(env));
-  //   exports.Set("threadsafe_function_ptr", InitThreadSafeFunctionPtr(env));
-  //   exports.Set("threadsafe_function_sum", InitThreadSafeFunctionSum(env));
-  //   exports.Set("threadsafe_function_unref",
-  //   InitThreadSafeFunctionUnref(env)); exports.Set("threadsafe_function",
-  //   InitThreadSafeFunction(env));
-  //   exports.Set("typed_threadsafe_function_ctx",
-  //               InitTypedThreadSafeFunctionCtx(env));
-  //   exports.Set("typed_threadsafe_function_existing_tsfn",
-  //               InitTypedThreadSafeFunctionExistingTsfn(env));
-  //   exports.Set("typed_threadsafe_function_ptr",
-  //               InitTypedThreadSafeFunctionPtr(env));
-  //   exports.Set("typed_threadsafe_function_sum",
-  //               InitTypedThreadSafeFunctionSum(env));
-  //   exports.Set("typed_threadsafe_function_unref",
-  //               InitTypedThreadSafeFunctionUnref(env));
-  //   exports.Set("typed_threadsafe_function",
-  //   InitTypedThreadSafeFunction(env));
-  // #endif
-  //   exports.Set("typedarray", InitTypedArray(env));
-  //   exports.Set("objectwrap", InitObjectWrap(env));
-  //   exports.Set("objectwrapConstructorException",
-  //       InitObjectWrapConstructorException(env));
-  //   exports.Set("objectwrap_removewrap", InitObjectWrapRemoveWrap(env));
-  //   exports.Set("objectwrap_multiple_inheritance",
-  //   InitObjectWrapMultipleInheritance(env)); exports.Set("objectreference",
-  //   InitObjectReference(env)); exports.Set("reference", InitReference(env));
-  //   exports.Set("version_management", InitVersionManagement(env));
-  //   exports.Set("thunking_manual", InitThunkingManual(env));
-  // #if (NAPI_VERSION > 7)
-  //   exports.Set("object_freeze_seal", InitObjectFreezeSeal(env));
-  // #endif
+  exports.Set("buffer", InitBuffer(env));
+#if (NAPI_VERSION > 2)
+  exports.Set("callbackscope", InitCallbackScope(env));
+#endif
+  exports.Set("dataview", InitDataView(env));
+  exports.Set("dataview_read_write", InitDataView(env));
+  exports.Set("dataview_read_write", InitDataViewReadWrite(env));
+  exports.Set("error", InitError(env));
+  exports.Set("external", InitExternal(env));
+  exports.Set("function", InitFunction(env));
+  exports.Set("functionreference", InitFunctionReference(env));
+  exports.Set("name", InitName(env));
+  exports.Set("handlescope", InitHandleScope(env));
+  exports.Set("movable_callbacks", InitMovableCallbacks(env));
+  exports.Set("memory_management", InitMemoryManagement(env));
+  exports.Set("object", InitObject(env));
+#ifndef NODE_ADDON_API_DISABLE_DEPRECATED
+  exports.Set("object_deprecated", InitObjectDeprecated(env));
+#endif // !NODE_ADDON_API_DISABLE_DEPRECATED
+  exports.Set("promise", InitPromise(env));
+  exports.Set("run_script", InitRunScript(env));
+#if (NAPI_VERSION > 3)
+  exports.Set("threadsafe_function_ctx", InitThreadSafeFunctionCtx(env));
+  exports.Set("threadsafe_function_existing_tsfn", InitThreadSafeFunctionExistingTsfn(env));
+  exports.Set("threadsafe_function_ptr", InitThreadSafeFunctionPtr(env));
+  exports.Set("threadsafe_function_sum", InitThreadSafeFunctionSum(env));
+  exports.Set("threadsafe_function_unref", InitThreadSafeFunctionUnref(env));
+  exports.Set("threadsafe_function", InitThreadSafeFunction(env));
+  exports.Set("typed_threadsafe_function_ctx",
+              InitTypedThreadSafeFunctionCtx(env));
+  exports.Set("typed_threadsafe_function_existing_tsfn",
+              InitTypedThreadSafeFunctionExistingTsfn(env));
+  exports.Set("typed_threadsafe_function_ptr",
+              InitTypedThreadSafeFunctionPtr(env));
+  exports.Set("typed_threadsafe_function_sum",
+              InitTypedThreadSafeFunctionSum(env));
+  exports.Set("typed_threadsafe_function_unref",
+              InitTypedThreadSafeFunctionUnref(env));
+  exports.Set("typed_threadsafe_function", InitTypedThreadSafeFunction(env));
+#endif
+  exports.Set("typedarray", InitTypedArray(env));
+  exports.Set("objectwrap", InitObjectWrap(env));
+  exports.Set("objectwrapConstructorException",
+      InitObjectWrapConstructorException(env));
+  exports.Set("objectwrap_removewrap", InitObjectWrapRemoveWrap(env));
+  exports.Set("objectwrap_multiple_inheritance", InitObjectWrapMultipleInheritance(env));
+  exports.Set("objectreference", InitObjectReference(env));
+  exports.Set("reference", InitReference(env));
+  exports.Set("version_management", InitVersionManagement(env));
+  exports.Set("thunking_manual", InitThunkingManual(env));
+#if (NAPI_VERSION > 7)
+  exports.Set("object_freeze_seal", InitObjectFreezeSeal(env));
+#endif
   return exports;
 }
 
