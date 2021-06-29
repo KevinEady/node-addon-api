@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install g++-4.9
         fi
-        if [ ! -z "$COLLECT_COVERAGE" ]; then
+        if [ "$COLLECT_COVERAGE" == "true" ]; then
           sudo gem install --user coveralls-lcov
         fi
       env:
@@ -55,12 +55,12 @@ jobs:
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           export CC="clang" CXX="clang++"
         fi
-        if [ ! -z "$COLLECT_COVERAGE" ]; then
+        if [ "$COLLECT_COVERAGE" == "true" ]; then
           export CFLAGS="$CFLAGS -O3 --coverage" CXXFLAGS="$CXXFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
         fi
         echo "CFLAGS=\"$CFLAGS\" CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\""
         npm run pretest -- --verbose
-        node test
+        node test/date.js
         find . -iname '*.gcda'
       env:
         COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
