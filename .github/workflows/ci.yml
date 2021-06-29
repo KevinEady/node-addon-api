@@ -76,6 +76,7 @@ jobs:
         BUILD_TYPE=$(node -p "process.config.target_defaults.default_configuration")
         GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
         lcov --capture --directory test/build/$BUILD_TYPE/obj.target/ --output-file test/build/$BUILD_TYPE/coverage.info
-        $GEM_HOME/bin/coveralls-lcov test/build/$BUILD_TYPE/coverage.info --repo-token $COVERALLS_REPO_TOKEN
+        lcov --remove test/build/$BUILD_TYPE/coverage.info '/usr/include/*' 'test/*' -o test/build/$BUILD_TYPE/coverage-filtered.info
+        $GEM_HOME/bin/coveralls-lcov test/build/$BUILD_TYPE/coverage-filtered.info --repo-token $COVERALLS_REPO_TOKEN
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
