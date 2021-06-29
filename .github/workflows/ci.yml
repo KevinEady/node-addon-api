@@ -32,7 +32,7 @@ jobs:
         if [ "$COLLECT_COVERAGE" == "true" ]; then
           # export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
           # export PATH="$PATH:$GEM_HOME/bin"
-          gem install coveralls-lcov
+          sudo gem install coveralls-lcov
           echo "PATH=\"$PATH\" GEM_HOME=\"$GEM_HOME\""
           find $GEM_HOME
         fi
@@ -67,6 +67,7 @@ jobs:
         npm run pretest -- --verbose
         node test/date.js
         find . -iname '*.gcda'
-        coveralls-lcov test/build/$(node -p "process.config.target_defaults.default_configuration")/coverage.info --repo-token ${{ secrets.COVERALLS_REPO_TOKEN }}
+        export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+        $GEM_HOME/bin/coveralls-lcov test/build/$(node -p "process.config.target_defaults.default_configuration")/coverage.info --repo-token ${{ secrets.COVERALLS_REPO_TOKEN }}
       env:
         COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
