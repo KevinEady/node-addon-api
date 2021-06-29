@@ -33,6 +33,7 @@ jobs:
           export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
           export PATH="$PATH:$GEM_HOME/bin"
           sudo gem install --user coveralls-lcov
+          echo "PATH=\"$PATH\" GEM_HOME=\"$GEM_HOME\""
         fi
       env:
         COLLECT_COVERAGE: ${{ format('{0}-{1}-{2}', matrix.node-version, matrix.compiler, matrix.os) == 'node/16-gcc-ubuntu-16.04' }}
