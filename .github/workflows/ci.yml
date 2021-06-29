@@ -34,6 +34,7 @@ jobs:
           # export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
           # export PATH="$PATH:$GEM_HOME/bin"
           gem install --user coveralls-lcov
+          sudo apt-get install -y lcov
           # echo "PATH=\"$PATH\" GEM_HOME=\"$GEM_HOME\""
           # find $GEM_HOME
         fi
