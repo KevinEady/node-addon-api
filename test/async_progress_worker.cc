@@ -87,7 +87,7 @@ class MalignWorker : public AsyncProgressWorker<ProgressData> {
     {
       std::unique_lock<std::mutex> lock(_cvm);
       progress.Signal();
-      _cv.wait(lock);
+      _cv.wait(lock, [_test_case_count] { return _test_case_count == 1; });
     }
     // Testing busy looping on send doesn't trigger unexpected empty data
     // OnProgress call.
@@ -99,7 +99,12 @@ class MalignWorker : public AsyncProgressWorker<ProgressData> {
 
   void OnProgress(const ProgressData* /* data */, size_t count) override {
     Napi::Env env = Env();
-    _test_case_count++;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    {
+      std::lock_guard<std::mutex> lock(_cvm);
+      _test_case_count++;
+    }
+    _cv.notify_all();
     bool error = false;
     Napi::String reason = Napi::String::New(env, "No error");
     if (_test_case_count <= 2 && count != 0) {
