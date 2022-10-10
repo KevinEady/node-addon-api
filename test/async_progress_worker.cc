@@ -103,7 +103,6 @@ class MalignWorker : public AsyncProgressWorker<ProgressData> {
       std::lock_guard<std::mutex> lock(_cvm);
       _test_case_count++;
     }
-    _cv.notify_all();
     bool error = false;
     Napi::String reason = Napi::String::New(env, "No error");
     if (_test_case_count <= 2 && count != 0) {
