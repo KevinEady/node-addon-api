@@ -59,7 +59,7 @@ jobs:
           npm run pretest -- --verbose
           node test
       - name: Report C++
-        run: mkdir coverage && cd test/build && gcovr --gcov-filter '.*\b(napi-inl.h)|(napi.h)\b' -v -r Release/obj.target --xml -o ../../coverage/coverage-cxx.xml --root=$(cd ../../ && pwd)
+        run: mkdir coverage && cd test/build && gcovr --gcov-filter '.*\b(napi-inl.h)|(napi.h)\b' -r Release/obj.target --xml -o ../../coverage/coverage-cxx.xml --root=$(cd ../../ && pwd)
       - name: Upload
         uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d  # v3.1.4
         with:
