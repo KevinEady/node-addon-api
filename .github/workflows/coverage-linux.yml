@@ -1,0 +1,66 @@
+name: Coverage Linux
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '**.md'
+      - benchmark/**
+      - doc/**
+      - tools/**
+      - unit-test/**
+      - .github/**
+      - '!.github/workflows/coverage-linux.yml'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - benchmark/**
+      - doc/**
+      - tools/**
+      - unit-test/**
+      - .github/**
+      - '!.github/workflows/coverage-linux.yml'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20.x'
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-linux:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
+        with:
+          persist-credentials: false
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4.6.1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Environment Information
+        run: npx envinfo
+      - name: Install gcovr
+        run: pip install gcovr==6.0
+      - name: Install dependencies
+        run: npm install
+      - name: npm test
+        run: |
+          export CFLAGS="$CFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
+          echo "CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\""
+          npm run pretest -- --verbose
+          node test
+      - name: Report C++
+        run: mkdir coverage && cd test/build && gcovr --gcov-filter '.*\b(napi-inl.h)|(napi.h)\b' -v -r Release/obj.target --xml -o ../../coverage/coverage-cxx.xml --root=$(cd ../../ && pwd)
+      - name: Upload
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d  # v3.1.4
+        with:
+          directory: ./coverage
