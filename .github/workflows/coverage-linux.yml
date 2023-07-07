@@ -54,8 +54,8 @@ jobs:
         run: npm install
       - name: npm test
         run: |
-          export CFLAGS="$CFLAGS -O3 --coverage" LDFLAGS="$LDFLAGS --coverage"
-          echo "CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\""
+          export CFLAGS="$CFLAGS -O0 --coverage" CXXFLAGS="$CXXFLAGS -O0 --coverage" LDFLAGS="$LDFLAGS --coverage"
+          echo "CFLAGS=\"$CFLAGS\" CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\""
           npm run pretest -- --verbose
           node test
       - name: Report C++
