@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #if NAPI_HAS_THREADS
 #include <mutex>
 #endif  // NAPI_HAS_THREADS
@@ -5743,6 +5744,7 @@ inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
                                                   ResourceString resourceName,
                                                   size_t maxQueueSize,
                                                   size_t initialThreadCount) {
+  std::cout << "Called ThreadSafeFunction::New\n";
   return New(
       env, callback, Object(), resourceName, maxQueueSize, initialThreadCount);
 }
