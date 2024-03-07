@@ -28,6 +28,10 @@ function test (bindingPath) {
     return err instanceof Error && err.message === 'test';
   });
 
+  assert.throws(() => binding.error.throwTypeErrorWithMessageLength('test'), function (err) {
+    return err instanceof TypeError && err.message === 'test' && err.messageLength === err.message.length;
+  });
+
   assert.throws(() => binding.error.throwTypeErrorCStr('test'), function (err) {
     return err instanceof TypeError && err.message === 'test';
   });

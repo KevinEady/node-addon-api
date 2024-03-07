@@ -108,6 +108,16 @@ void ThrowJSError(const CallbackInfo& info) {
   throw Error::New(info.Env(), message);
 }
 
+void ThrowTypeErrorWithMessageLength(const CallbackInfo& info) {
+  auto env = info.Env();
+  std::string message = info[0].As<String>().Utf8Value();
+
+  ReleaseAndWaitForChildProcess(info, 1);
+  auto err = TypeError::New(env, message);
+  err.Set("messageLength", Number::New(env, message.length()));
+  throw err;
+}
+
 void ThrowTypeErrorCtor(const CallbackInfo& info) {
   Napi::Value js_type_error = info[0];
   ReleaseAndWaitForChildProcess(info, 1);
@@ -229,6 +239,16 @@ void ThrowJSError(const CallbackInfo& info) {
 
   ReleaseAndWaitForChildProcess(info, 1);
   Error::New(info.Env(), message).ThrowAsJavaScriptException();
+}
+
+void ThrowTypeErrorWithMessageLength(const CallbackInfo& info) {
+  auto env = info.Env();
+  std::string message = info[0].As<String>().Utf8Value();
+
+  ReleaseAndWaitForChildProcess(info, 1);
+  auto err = TypeError::New(env, message);
+  err.Set("messageLength", Number::New(env, message.length()));
+  err.ThrowAsJavaScriptException();
 }
 
 void ThrowTypeError(const CallbackInfo& info) {
@@ -407,6 +427,8 @@ Object InitError(Env env) {
   exports["lastExceptionErrorCode"] =
       Function::New(env, LastExceptionErrorCode);
   exports["throwJSError"] = Function::New(env, ThrowJSError);
+  exports["throwTypeErrorWithMessageLength"] =
+      Function::New(env, ThrowTypeErrorWithMessageLength);
   exports["throwTypeError"] = Function::New(env, ThrowTypeError);
   exports["throwTypeErrorCtor"] = Function::New(env, ThrowTypeErrorCtor);
   exports["throwTypeErrorCStr"] = Function::New(env, ThrowTypeErrorCStr);
