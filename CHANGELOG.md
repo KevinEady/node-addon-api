@@ -1,5 +1,12 @@
 # node-addon-api Changelog
 
+## [8.2.0](https://github.com/KevinEady/node-addon-api/compare/v8.1.0...v8.2.0) (2024-10-13)
+
+
+### Features
+
+* add support for nogc types via `BasicEnv`  ([#1514](https://github.com/KevinEady/node-addon-api/issues/1514)) ([b4aeecb](https://github.com/KevinEady/node-addon-api/commit/b4aeecb046480eeaaf1c578a140f71ac0e77094f))
+
 ## [8.1.0](https://github.com/nodejs/node-addon-api/compare/node-addon-api-v8.0.0...node-addon-api-v8.1.0) (2024-07-05)
 
 
